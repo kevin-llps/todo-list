@@ -1,10 +1,19 @@
-# Code Practices
+# Pratiques de Code
 
-- Create unit tests to cover all java methods.
-- No comments should be present in the code.
-- Repository and service classes must be able to be annotated with stereotype annotations like `@Service`, `@Component`, or `@Repository`.
-- `@Autowired` annotations are prohibited in Java code, except for tests.
-- Java entities should not be returned directly as responses or received directly in REST endpoints; use DTOs instead.
-- All fields must be tested in unit tests.
-- In controller tests, verify the response and content type returned by the API.
-- Test classes and methods should be non-public.
+## Général
+- Aucun commentaire ne doit être présent dans le code.
+
+## Tests
+- Créer des tests unitaires pour couvrir toutes les méthodes Java.
+- Les classes et méthodes de test doivent être non publiques.
+- Tous les champs doivent être testés dans les tests unitaires.
+- Dans les tests de contrôleur, vérifiez la réponse et le type de contenu retournés par l'API.
+
+## Entité Java
+- Dans une Java Entity, ajouter une annotation `@Column` sur chaque champ. Les propriétés `name`, `nullable` et `columnDefinition` doivent être renseignés.
+
+## Classes Java
+- Utiliser des `record` pour les classes Java sauf s'il s'agit d'une entité.
+- Les entités Java ne doivent pas être retournées directement comme réponses ou reçues directement dans les points de terminaison REST ; utilisez des DTO à la place.
+- Les classes de repository et de service doivent pouvoir être annotées avec des annotations de stéréotype comme `@Service`, `@Component`, ou `@Repository`.
+- Les annotations `@Autowired` sont interdites dans le code Java, sauf pour les tests.
