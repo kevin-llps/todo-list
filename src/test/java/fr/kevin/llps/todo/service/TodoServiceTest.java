@@ -34,24 +34,6 @@ class TodoServiceTest {
     private TodoService todoService;
 
     @Test
-    void shouldCreateTodo() {
-        Todo todo = oneTodo(1);
-        TodoDto todoDto = oneTodoDto();
-        TodoDto expected = oneTodoDto(1);
-
-        when(todoRepository.save(todo)).thenReturn(todo);
-        when(idGeneratorService.generateId()).thenReturn(1);
-
-        TodoDto actual = todoService.createTodo(todoDto);
-
-        assertThat(actual).isEqualTo(expected);
-
-        verify(todoRepository).save(todo);
-        verify(idGeneratorService).generateId();
-        verifyNoMoreInteractions(todoRepository, idGeneratorService);
-    }
-
-    @Test
     void shouldGetAllTodos() {
         List<Todo> todoList = todoList();
         List<TodoDto> expected = todoDtoList();
@@ -96,12 +78,4 @@ class TodoServiceTest {
         verifyNoMoreInteractions(todoRepository);
     }
 
-    @Test
-    void shouldDeleteTodoById() {
-        int id = 1;
-
-        todoService.deleteTodoById(id);
-
-        verify(todoRepository).deleteById(id);
-    }
 }

@@ -1,13 +1,13 @@
 package fr.kevin.llps.todo.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import fr.kevin.llps.todo.dto.TodoDto;
 import fr.kevin.llps.todo.service.TodoService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -18,12 +18,6 @@ public class TodoController {
 
     public TodoController(TodoService todoService) {
         this.todoService = todoService;
-    }
-
-    @PostMapping
-    public ResponseEntity<TodoDto> createTodo(@Valid @RequestBody TodoDto todoDto) {
-        TodoDto createdTodo = todoService.createTodo(todoDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdTodo);
     }
 
     @GetMapping
@@ -38,9 +32,4 @@ public class TodoController {
         return ResponseEntity.ok(todo);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<TodoDto> deleteTodoById(@PathVariable int id) {
-        todoService.deleteTodoById(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
 }

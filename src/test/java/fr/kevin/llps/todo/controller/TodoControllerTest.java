@@ -30,65 +30,11 @@ class TodoControllerTest {
     @MockitoBean
     private TodoService todoService;
 
-    @Value("classpath:/json/create-todo-request.json")
-    private Resource createTodoRequest;
-
-    @Value("classpath:/json/todo-request-missing-title.json")
-    private Resource todoRequestMissingTitle;
-
-    @Value("classpath:/json/todo-request-missing-completed.json")
-    private Resource todoRequestMissingCompleted;
-
-    @Value("classpath:/json/create-todo-response.json")
-    private Resource createTodoResponse;
-
     @Value("classpath:/json/get-todo-by-id-response.json")
     private Resource getTodoByIdResponse;
 
     @Value("classpath:/json/get-all-todo-response.json")
     private Resource getAllTodoResponse;
-
-    @Test
-    void shouldCreateTodo() throws Exception {
-        TodoDto todoDto = oneTodoDto();
-        TodoDto createdTodoDto = oneTodoDto(1);
-
-        when(todoService.createTodo(todoDto)).thenReturn(createdTodoDto);
-
-        mockMvc.perform(post("/todos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(createTodoRequest.getContentAsString(Charset.defaultCharset())))
-                .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(createTodoResponse.getContentAsString(Charset.defaultCharset())));
-
-        verify(todoService).createTodo(todoDto);
-        verifyNoMoreInteractions(todoService);
-    }
-
-    @Test
-    void shouldReturnBadRequest_whenTitleIsMissing() throws Exception {
-        mockMvc.perform(post("/todos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(todoRequestMissingTitle.getContentAsString(Charset.defaultCharset())))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.message").value("Title is mandatory"));
-
-        verifyNoInteractions(todoService);
-    }
-
-    @Test
-    void shouldReturnBadRequest_whenCompletedIsMissing() throws Exception {
-        mockMvc.perform(post("/todos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(todoRequestMissingCompleted.getContentAsString(Charset.defaultCharset())))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.message").value("Completed status is mandatory"));
-
-        verifyNoInteractions(todoService);
-    }
 
     @Test
     void shouldGetAllTodos() throws Exception {
@@ -138,13 +84,4 @@ class TodoControllerTest {
         verifyNoMoreInteractions(todoService);
     }
 
-    @Test
-    void shouldDeleteTodoById() throws Exception {
-        mockMvc.perform(delete("/todos/1")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
-
-        verify(todoService).deleteTodoById(1);
-        verifyNoMoreInteractions(todoService);
-    }
 }

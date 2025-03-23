@@ -1,8 +1,6 @@
 package fr.kevin.llps.todo.dto;
 
 import fr.kevin.llps.todo.entity.Todo;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,10 +14,8 @@ public class TodoDto {
 
     private Integer id;
 
-    @NotBlank(message = "Title is mandatory")
     private String title;
 
-    @NotNull(message = "Completed status is mandatory")
     private Boolean completed;
 
     private Integer numOrder;

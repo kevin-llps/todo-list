@@ -14,20 +14,6 @@ import java.util.List;
 public class TodoService {
 
     private final TodoRepository todoRepository;
-    private final IdGeneratorService idGeneratorService;
-
-    public TodoDto createTodo(TodoDto todoDto) {
-        Todo todo = new Todo();
-        todo.setTodoId(idGeneratorService.generateId());
-        todo.setTitle(todoDto.getTitle());
-        todo.setCompleted(todoDto.getCompleted());
-        todo.setNumOrder(todoDto.getNumOrder());
-        todo.setExpiryDate(todoDto.getExpiryDate());
-
-        Todo savedTodo = todoRepository.save(todo);
-
-        return new TodoDto(savedTodo);
-    }
 
     public List<TodoDto> getAllTodos() {
         List<Todo> todos = todoRepository.findAllOrdered();
@@ -43,7 +29,4 @@ public class TodoService {
                 .orElseThrow(() -> new TodoNotFoundException("Todo was not found"));
     }
 
-    public void deleteTodoById(int id) {
-        todoRepository.deleteById(id);
-    }
 }
