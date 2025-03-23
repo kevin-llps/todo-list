@@ -15,5 +15,11 @@ Un élément Todo est créé selon plusieurs règles :
     - Statut HTTP 400
     - Un message d'erreur explicite dans le corps de la réponse
 
+### Implémentation
+
+1. Controller : Endpoint `POST /todos`
+2. Service : Création du Todo (avec mapping de tous les champs)
+3. Repository : Enregistrement en base
+
 ### Base de données
 - La table `todo` sera utilisée pour stocker les éléments Todo.
