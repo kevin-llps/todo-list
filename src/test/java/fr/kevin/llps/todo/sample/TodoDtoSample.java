@@ -1,7 +1,5 @@
 package fr.kevin.llps.todo.sample;
 
-import fr.kevin.llps.todo.dto.TodoDto;
-import fr.kevin.llps.todo.entity.Todo;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
