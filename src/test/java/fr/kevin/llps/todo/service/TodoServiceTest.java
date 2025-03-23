@@ -10,14 +10,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static fr.kevin.llps.todo.sample.TodoDtoSample.oneTodoDto;
+import static fr.kevin.llps.todo.sample.TodoDtoSample.todoDtoList;
+import static fr.kevin.llps.todo.sample.TodoSample.oneTodo;
+import static fr.kevin.llps.todo.sample.TodoSample.todoList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,98 +27,81 @@ class TodoServiceTest {
     @Mock
     private TodoRepository todoRepository;
 
+    @Mock
+    private IdGeneratorService idGeneratorService;
+
     @InjectMocks
     private TodoService todoService;
 
     @Test
-    void testCreateTodo() {
-        Todo todo = new Todo();
-        todo.setTitle("Test Todo");
-        todo.setCompleted(false);
-        todo.setNumOrder(1);
-        todo.setExpiryDate(LocalDateTime.now());
+    void shouldCreateTodo() {
+        Todo todo = oneTodo(1);
+        TodoDto todoDto = oneTodoDto();
+        TodoDto expected = oneTodoDto(1);
 
-        when(todoRepository.save(any(Todo.class))).thenReturn(todo);
+        when(todoRepository.save(todo)).thenReturn(todo);
+        when(idGeneratorService.generateId()).thenReturn(1);
 
-        TodoDto todoDto = new TodoDto();
-        todoDto.setTitle("Test Todo");
-        todoDto.setCompleted(false);
-        todoDto.setNumOrder(1);
-        todoDto.setExpiryDate(LocalDateTime.now());
+        TodoDto actual = todoService.createTodo(todoDto);
 
-        TodoDto createdTodo = todoService.createTodo(todoDto);
+        assertThat(actual).isEqualTo(expected);
 
-        assertThat(createdTodo).isNotNull();
-        assertThat(createdTodo.getTitle()).isEqualTo("Test Todo");
-        assertThat(createdTodo.getCompleted()).isFalse();
-        assertThat(createdTodo.getNumOrder()).isEqualTo(1);
-        assertThat(createdTodo.getExpiryDate()).isEqualTo(todo.getExpiryDate());
+        verify(todoRepository).save(todo);
+        verify(idGeneratorService).generateId();
+        verifyNoMoreInteractions(todoRepository, idGeneratorService);
     }
 
     @Test
-    void testGetAllTodos() {
-        Todo todo1 = new Todo();
-        todo1.setTitle("Test Todo 1");
-        todo1.setCompleted(false);
-        todo1.setNumOrder(1);
-        todo1.setExpiryDate(LocalDateTime.now());
+    void shouldGetAllTodos() {
+        List<Todo> todoList = todoList();
+        List<TodoDto> expected = todoDtoList();
 
-        Todo todo2 = new Todo();
-        todo2.setTitle("Test Todo 2");
-        todo2.setCompleted(true);
-        todo2.setNumOrder(2);
-        todo2.setExpiryDate(LocalDateTime.now().plusDays(1));
+        when(todoRepository.findAllOrdered()).thenReturn(todoList);
 
-        when(todoRepository.findAllOrdered()).thenReturn(Arrays.asList(todo1, todo2));
+        List<TodoDto> actual = todoService.getAllTodos();
 
-        List<TodoDto> todos = todoService.getAllTodos();
+        assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
 
-        assertThat(todos).hasSize(2);
-
-        TodoDto todoDto1 = todos.get(0);
-        assertThat(todoDto1.getTitle()).isEqualTo("Test Todo 1");
-        assertThat(todoDto1.getCompleted()).isFalse();
-        assertThat(todoDto1.getNumOrder()).isEqualTo(1);
-        assertThat(todoDto1.getExpiryDate()).isEqualTo(todo1.getExpiryDate());
-
-        TodoDto todoDto2 = todos.get(1);
-        assertThat(todoDto2.getTitle()).isEqualTo("Test Todo 2");
-        assertThat(todoDto2.getCompleted()).isTrue();
-        assertThat(todoDto2.getNumOrder()).isEqualTo(2);
-        assertThat(todoDto2.getExpiryDate()).isEqualTo(todo2.getExpiryDate());
+        verify(todoRepository).findAllOrdered();
+        verifyNoMoreInteractions(todoRepository);
     }
 
     @Test
-    void testGetTodoById() {
-        Todo todo = new Todo();
-        todo.setTitle("Test Todo");
-        todo.setCompleted(false);
-        todo.setNumOrder(1);
-        todo.setExpiryDate(LocalDateTime.now());
+    void shouldGetTodoById() {
+        int id = 1;
+        Todo todo = oneTodo(id);
+        TodoDto expected = oneTodoDto(id);
 
-        when(todoRepository.findById(anyInt())).thenReturn(Optional.of(todo));
+        when(todoRepository.findById(id)).thenReturn(Optional.of(todo));
 
-        TodoDto todoDto = todoService.getTodoById(1);
+        TodoDto todoDto = todoService.getTodoById(id);
 
-        assertThat(todoDto).isNotNull();
-        assertThat(todoDto.getTitle()).isEqualTo("Test Todo");
-        assertThat(todoDto.getCompleted()).isFalse();
-        assertThat(todoDto.getNumOrder()).isEqualTo(1);
-        assertThat(todoDto.getExpiryDate()).isEqualTo(todo.getExpiryDate());
+        assertThat(todoDto).isEqualTo(expected);
+
+        verify(todoRepository).findById(id);
+        verifyNoMoreInteractions(todoRepository);
     }
 
     @Test
-    void testGetTodoByIdNotFound() {
-        when(todoRepository.findById(anyInt())).thenReturn(Optional.empty());
+    void givenNoExistentId_whenGetTodoById_shouldThrowTodoNotFoundException() {
+        int id = 1;
 
-        assertThatThrownBy(() -> todoService.getTodoById(1))
+        when(todoRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> todoService.getTodoById(id))
                 .isInstanceOf(TodoNotFoundException.class)
                 .hasMessage("Todo was not found");
+
+        verify(todoRepository).findById(id);
+        verifyNoMoreInteractions(todoRepository);
     }
 
     @Test
-    void testDeleteTodoById() {
-        todoService.deleteTodoById(1);
-        verify(todoRepository, times(1)).deleteById(1);
+    void shouldDeleteTodoById() {
+        int id = 1;
+
+        todoService.deleteTodoById(id);
+
+        verify(todoRepository).deleteById(id);
     }
 }

@@ -5,17 +5,19 @@ import fr.kevin.llps.todo.exception.TodoNotFoundException;
 import fr.kevin.llps.todo.service.TodoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.nio.charset.Charset;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static fr.kevin.llps.todo.sample.TodoDtoSample.oneTodoDto;
+import static fr.kevin.llps.todo.sample.TodoDtoSample.todoDtoList;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -28,96 +30,112 @@ class TodoControllerTest {
     @MockitoBean
     private TodoService todoService;
 
+    @Value("classpath:/json/create-todo-request.json")
+    private Resource createTodoRequest;
+
+    @Value("classpath:/json/todo-request-missing-title.json")
+    private Resource todoRequestMissingTitle;
+
+    @Value("classpath:/json/todo-request-missing-completed.json")
+    private Resource todoRequestMissingCompleted;
+
+    @Value("classpath:/json/create-todo-response.json")
+    private Resource createTodoResponse;
+
+    @Value("classpath:/json/get-todo-by-id-response.json")
+    private Resource getTodoByIdResponse;
+
+    @Value("classpath:/json/get-all-todo-response.json")
+    private Resource getAllTodoResponse;
+
     @Test
     void shouldCreateTodo() throws Exception {
-        TodoDto todoDto = new TodoDto();
-        todoDto.setTitle("Test Todo");
-        todoDto.setCompleted(false);
-        todoDto.setNumOrder(1);
-        todoDto.setExpiryDate(LocalDateTime.now());
+        TodoDto todoDto = oneTodoDto();
+        TodoDto createdTodoDto = oneTodoDto(1);
 
-        when(todoService.createTodo(any(TodoDto.class))).thenReturn(todoDto);
+        when(todoService.createTodo(todoDto)).thenReturn(createdTodoDto);
 
         mockMvc.perform(post("/todos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\": \"Test Todo\", \"completed\": false, \"numOrder\": 1, \"expiryDate\": \"" + LocalDateTime.now().toString() + "\"}"))
+                        .content(createTodoRequest.getContentAsString(Charset.defaultCharset())))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.title").value("Test Todo"))
-                .andExpect(jsonPath("$.completed").value(false))
-                .andExpect(jsonPath("$.numOrder").value(1))
-                .andExpect(jsonPath("$.expiryDate").value(todoDto.getExpiryDate().toString()));
+                .andExpect(content().json(createTodoResponse.getContentAsString(Charset.defaultCharset())));
+
+        verify(todoService).createTodo(todoDto);
+        verifyNoMoreInteractions(todoService);
     }
 
     @Test
-    void shouldReturnBadRequestWhenTitleIsMissing() throws Exception {
+    void shouldReturnBadRequest_whenTitleIsMissing() throws Exception {
         mockMvc.perform(post("/todos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"completed\": false, \"numOrder\": 1, \"expiryDate\": \"" + LocalDateTime.now().toString() + "\"}"))
+                        .content(todoRequestMissingTitle.getContentAsString(Charset.defaultCharset())))
                 .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message").value("Title is mandatory"));
+
+        verifyNoInteractions(todoService);
     }
 
     @Test
-    void shouldReturnBadRequestWhenCompletedIsMissing() throws Exception {
+    void shouldReturnBadRequest_whenCompletedIsMissing() throws Exception {
         mockMvc.perform(post("/todos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\": \"Test Todo\", \"numOrder\": 1, \"expiryDate\": \"" + LocalDateTime.now().toString() + "\"}"))
+                        .content(todoRequestMissingCompleted.getContentAsString(Charset.defaultCharset())))
                 .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message").value("Completed status is mandatory"));
+
+        verifyNoInteractions(todoService);
     }
 
     @Test
     void shouldGetAllTodos() throws Exception {
-        TodoDto todo1 = new TodoDto();
-        todo1.setTitle("Test Todo 1");
-        todo1.setCompleted(false);
-        todo1.setNumOrder(1);
-        todo1.setExpiryDate(LocalDateTime.now());
+        List<TodoDto> todoList = todoDtoList();
 
-        TodoDto todo2 = new TodoDto();
-        todo2.setTitle("Test Todo 2");
-        todo2.setCompleted(true);
-        todo2.setNumOrder(2);
-        todo2.setExpiryDate(LocalDateTime.now().plusDays(1));
-
-        List<TodoDto> todos = Arrays.asList(todo1, todo2);
-
-        when(todoService.getAllTodos()).thenReturn(todos);
+        when(todoService.getAllTodos()).thenReturn(todoList);
 
         mockMvc.perform(get("/todos")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].title").value("Test Todo 1"))
-                .andExpect(jsonPath("$[1].title").value("Test Todo 2"));
+                .andExpect(content().json(getAllTodoResponse.getContentAsString(Charset.defaultCharset())));
+
+        verify(todoService).getAllTodos();
+        verifyNoMoreInteractions(todoService);
     }
 
     @Test
     void shouldGetTodoById() throws Exception {
-        TodoDto todoDto = new TodoDto();
-        todoDto.setTitle("Test Todo");
-        todoDto.setCompleted(false);
-        todoDto.setNumOrder(1);
-        todoDto.setExpiryDate(LocalDateTime.now());
+        int id = 1;
 
-        when(todoService.getTodoById(1)).thenReturn(todoDto);
+        TodoDto todoDto = oneTodoDto(id);
+
+        when(todoService.getTodoById(id)).thenReturn(todoDto);
 
         mockMvc.perform(get("/todos/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.title").value("Test Todo"));
+                .andExpect(content().json(getTodoByIdResponse.getContentAsString(Charset.defaultCharset()), true));
+
+        verify(todoService).getTodoById(id);
+        verifyNoMoreInteractions(todoService);
     }
 
     @Test
-    void shouldReturnNotFoundWhenTodoByIdDoesNotExist() throws Exception {
+    void shouldReturnNotFound_whenTodoIdDoesNotExist() throws Exception {
         when(todoService.getTodoById(1)).thenThrow(new TodoNotFoundException("Todo was not found"));
 
         mockMvc.perform(get("/todos/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message").value("Todo was not found"));
+
+        verify(todoService).getTodoById(1);
+        verifyNoMoreInteractions(todoService);
     }
 
     @Test
@@ -125,5 +143,8 @@ class TodoControllerTest {
         mockMvc.perform(delete("/todos/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
+
+        verify(todoService).deleteTodoById(1);
+        verifyNoMoreInteractions(todoService);
     }
 }

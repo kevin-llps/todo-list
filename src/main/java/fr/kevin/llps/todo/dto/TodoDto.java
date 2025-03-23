@@ -1,14 +1,20 @@
 package fr.kevin.llps.todo.dto;
 
 import fr.kevin.llps.todo.entity.Todo;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class TodoDto {
 
-    private Integer todoId;
+    private Integer id;
 
     @NotBlank(message = "Title is mandatory")
     private String title;
@@ -19,53 +25,12 @@ public class TodoDto {
     private Integer numOrder;
     private LocalDateTime expiryDate;
 
-    public TodoDto() {}
-
     public TodoDto(Todo todo) {
-        this.todoId = todo.getTodoId();
+        this.id = todo.getTodoId();
         this.title = todo.getTitle();
         this.completed = todo.getCompleted();
         this.numOrder = todo.getNumOrder();
         this.expiryDate = todo.getExpiryDate();
     }
 
-    public Integer getTodoId() {
-        return todoId;
-    }
-
-    public void setTodoId(Integer todoId) {
-        this.todoId = todoId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public Boolean getCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(Boolean completed) {
-        this.completed = completed;
-    }
-
-    public Integer getNumOrder() {
-        return numOrder;
-    }
-
-    public void setNumOrder(Integer numOrder) {
-        this.numOrder = numOrder;
-    }
-
-    public LocalDateTime getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(LocalDateTime expiryDate) {
-        this.expiryDate = expiryDate;
-    }
 }
