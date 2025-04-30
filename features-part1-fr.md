@@ -15,7 +15,7 @@ Un élément Todo est créé selon plusieurs règles :
     - Statut HTTP 400
     - Un message d'erreur explicite dans le corps de la réponse
 
-### Implémentation
+### Architecture
 
 1. Controller : Endpoint `POST /todos`
 2. Service : Création du Todo (avec mapping de tous les champs)
