@@ -13,7 +13,9 @@ Content-Type: application/json
 
 {
   "title": "Nouvelle tâche",
-  "completed": false
+  "completed": false,
+  "numOrder": 1,
+  "expiryDate": "2025-03-22T21:49:05.815"
 }
 
 ### Récupérer tous les Todos
